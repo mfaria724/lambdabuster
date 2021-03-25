@@ -351,34 +351,88 @@ class Integer
 end
 
 class Currency 
+
+  attr_accessor :value
+
   def initialize(value)
     @value = value
   end
 
   def in(currency)
-    @value.euros.to_s
+    (@value * self.send(currency)).send(currency)
   end
 end
 
 class Dolar < Currency
-  
-  @@dolars = 1
-  @@euros = 0.85
-  @@bolivares = 1850000
-  @@bitcoins = 0.000019
+  def dolars
+    return 1
+  end
 
+  def euros 
+    return 0.85
+  end
+
+  def bolivares
+    return 1850000
+  end
+
+  def bitcoins
+    return 0.000019
+  end
 end
 
 class Euro < Currency
+  def dolars
+    return 1.181
+  end
 
+  def euros 
+    return 1
+  end
+
+  def bolivares
+    return 2171000
+  end
+  
+  def bitcoins
+    return 0.0000223
+  end
 end
 
 class Bolivar < Currency
+  def dolars
+    return 0.000000545
+  end
 
+  def euros 
+    return 0.00000046
+  end
+
+  def bolivares
+    return 1
+  end
+  
+  def bitcoins
+    return 0.0000000000102
+  end
 end
 
 class Bitcoin < Currency
+  def dolars
+    return 52000
+  end
 
+  def euros 
+    return 44830
+  end
+
+  def bolivares
+    return 98000000000
+  end
+  
+  def bitcoins
+    return 1
+  end
 end
 
 c_nolan = Director.new('Christopher Nolan', 'X', 'English')
@@ -411,6 +465,7 @@ tenet_discount = Discount.new(tenet)
 puts tenet_discount.price
 puts tenet_discount.rent_price
 
-var = 15.dolars()
-puts var.in(:euros) 
-
+var = 1850000.bolivares()
+var2 = var.in(:dolars) 
+puts var2.value
+puts var2.class
