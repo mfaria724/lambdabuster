@@ -351,8 +351,8 @@ class Integer
 end
 
 class Currency 
-
   attr_accessor :value
+  attr_accessor :currency
 
   def initialize(value)
     @value = value
@@ -361,9 +361,28 @@ class Currency
   def in(currency)
     (@value * self.send(currency)).send(currency)
   end
+
+  def compare(object)
+    this_value = self.in(object.currency).value
+    other_value = object.value
+    if this_value < other_value then
+      return :lesser
+    elsif this_value == other_value then
+      return :equal
+    else 
+      return :greater
+    end
+  end
+    
 end
 
 class Dolar < Currency
+
+  def initialize(value)
+    super(value)
+    @currency = :dolars
+  end
+
   def dolars
     return 1
   end
@@ -382,6 +401,12 @@ class Dolar < Currency
 end
 
 class Euro < Currency
+
+  def initialize(value)
+    super(value)
+    @currency = :euros
+  end
+
   def dolars
     return 1.181
   end
@@ -400,6 +425,12 @@ class Euro < Currency
 end
 
 class Bolivar < Currency
+
+  def initialize(value)
+    super(value)
+    @currency = :bolivares
+  end
+  
   def dolars
     return 0.000000545
   end
@@ -418,6 +449,12 @@ class Bolivar < Currency
 end
 
 class Bitcoin < Currency
+
+  def initialize(value)
+    super(value)
+    @currency = :bitcoins
+  end
+
   def dolars
     return 52000
   end
@@ -469,3 +506,5 @@ var = 1850000.bolivares()
 var2 = var.in(:dolars) 
 puts var2.value
 puts var2.class
+
+puts 1.dolars.compare(1850000.bolivares) 
