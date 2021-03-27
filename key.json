@@ -18,7 +18,7 @@
     "name": String. Nombre de la película,
     "runtime": Int. Duración de la película en minutos,
     "categories": [String]. Lista de categorías o géneros de la película,
-    "release_date": Date. Fecha de estreno de la película, en formato ISO 8601,
+    "release-date": Date. Fecha de estreno de la película, en formato ISO 8601,
     "directors": [String]. Lista con los nombres de los directores de la película,
     "actors": [String]. Lista con los nombres de los actores de la película,
     "price": Float. Precio de compra de la película,

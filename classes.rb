@@ -13,12 +13,17 @@ class SearchList
 
   def to_s
     # print first n-1 elemnts with a comma
-    list_without_last = @list.first @list.size - 1
-    result_str = ""
-    list_without_last.each { |x| result_str += "#{x.to_s}, " }
-    
-    # print last element
-    result_str += @list[-1].to_s
+    if ! @list.empty? then
+      list_without_last = @list.first @list.size - 1
+      result_str = ""
+      list_without_last.each { |x| result_str += "#{x.to_s}, " }
+      
+      # print last element
+      result_str += @list[-1].to_s
+      return result_str
+    else
+      return ""
+    end
   end
   
   # def +(other)
@@ -29,13 +34,27 @@ class SearchList
   # @list.each(∗args, &block)
   # end
 
-  def scan()
+  def scan(key)
 
+    if @list.empty? then
+      return SearchList.new()
+    elsif @list.first.instance_variables.include?(("@" + key.to_s).to_sym)
+      temp_list = @list.select { |elem| yield elem.send(key) }
+      return SearchList.new(*temp_list)
+    else
+      throw "Los elementos de la lista no poseen el atributo #{key}."
+    end 
+    
   end
 
 end
 
 class Person
+
+  attr_accessor :name
+  attr_accessor :birthday
+  attr_accessor :nationality
+
   def initialize(name, birthday, nationality)
     @name = name
     @birthday = birthday
@@ -472,6 +491,42 @@ class Bitcoin < Currency
   end
 end
 
+module BuyOrder
+  def buy_order(transaction)
+    transaction.date = Date.today
+    trasanction.total = trasanction.movie.rent_price
+  end
+end
+
+module RentOrder
+  def rent_order(transaction)
+    transaction.date = Date.today
+    trasanction.total = trasanction.movie.price
+  end
+end
+
+class Transaction
+  attr_accessor :movie
+  attr_accessor :date
+  attr_accessor :total
+
+  def initialize(movie, type)
+    @movie = movie
+    @type = type
+  end
+end
+
+class User
+  def initialize
+    @owned_movies = SearchList.new()
+    @rented_movies = SearchList.new()
+    @trasanctions = SearchList.new() 
+  end
+end
+
+# TODO: delete all test code
+
+=begin
 c_nolan = Director.new('Christopher Nolan', 'X', 'English')
 j_d_washington = Actor.new('John David Washington', 'X', 'American')
 r_pattinson = Actor.new('Robert Pattinson', 'X', 'English')
@@ -490,7 +545,6 @@ tenet = Movie.new(
   20
 )
 
-=begin
 puts tenet.to_s
 puts tenet.price
 puts tenet.rent_price
@@ -510,6 +564,6 @@ puts var2.class
 
 puts 1.dolars.compare(1850000.bolivares) 
 
-mysymbol = :name
-puts c_nolan.instance_variables.include?(("@" + mysymbol.to_s).to_sym)
+list = SearchList.new(c_nolan, j_d_washington, r_pattinson, e_debicki)
+puts list.scan(:nationality) { |nationality| nationality == 'English' }
 =end
