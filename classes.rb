@@ -14,6 +14,10 @@ class SearchList
     @list.empty?
   end
 
+  def include?(element)
+    @list.include? element
+  end
+
   def first
     @list.first
   end
@@ -69,7 +73,7 @@ class Person
   end
 
   def to_s
-    @name
+    "Nombre: #{@name}.\nCumplea;os: #{@birthday}.\nNacionalidad: #{@nationality}."
   end
 end
 

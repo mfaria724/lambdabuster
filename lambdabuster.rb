@@ -114,15 +114,9 @@ class Cliente
         movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s +
         " " + currency
 
-<<<<<<< HEAD
-      opcion = prompt("Desea comprar la pelicula? [N/y]")
-      if opcion == "y"
-        @user.owned_movies
-      end
-=======
       confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
-      if confirmation == "y":
-        @user.send(user_list) << movie
+      if confirmation == "y"
+        @user.send(user_list) << movie.name
         puts "Su orden ha sido procesada con éxito."
       end
 
@@ -136,10 +130,48 @@ class Cliente
     puts "Películas Alquiladas: "
     puts @user.rented_movies
 
-    response = prompt "¿Desea consultar la información de alguna de estas películas? [N/y]"
-    if response == "y"
-      prompt "Ingrese el nombre de la película que desea consultar: "
->>>>>>> 1969680cdf14ca15d1c917669bb112dc9b5e2109
+    response = prompt "¿Desea consultar la información de alguna de estas películas? [N/y] "
+    while response == "y"
+      movie_name = prompt "Ingrese el nombre de la película que desea consultar: "
+
+      while (! @user.owned_movies.include? movie_name) && 
+        (! @user.rented_movies.include? movie_name) &&
+        (movie_name != "Salir")
+        puts "Pelicula no encontrada. Debe ingresar una alguna alquilada o comprada."
+        puts "Puede escribir 'Salir' para regresar al menu principal"
+        movie_name = prompt "Ingrese el nombre de la película que desea consultar: "
+      end
+
+      if movie_name != "Salir"
+        movie = (@movies.scan(:name) { |name| name == movie_name }).first
+        puts movie
+        response2 = prompt "¿Desea consultar la información de algun actor o director " + 
+          "de esta pelicula? [N/y] "
+        
+        while response2 == "y"
+          person_name = prompt "Ingrese el nombre de la persona que desea consultar: "
+
+          while (! movie.actors.include? person_name) && 
+            (! movie.directors.include? person_name) &&
+            (person_name != "Salir")
+            puts "Persona no encontrada. Debe ser un actor o director de #{movie.name}."
+            puts "Puede escribir 'Salir' para seleccionar otra pelicula."
+            person_name = prompt "Ingrese el nombre de la persona que desea consultar: "
+          end
+
+          if person_name != "Salir"
+            puts @persons[person_name]
+            response2 = prompt "¿Desea consultar la información de algun otro actor o " + 
+              "director de esta pelicula? [N/y]"
+          else
+            response2 = "N"
+          end
+        end
+        
+        response = prompt "¿Desea consultar la información de alguna otra película? [N/y]"
+      else
+        response = "N"
+      end
     end
   end
 
