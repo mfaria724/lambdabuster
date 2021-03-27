@@ -113,6 +113,11 @@ class Cliente
       puts "El precio de la pelicula es " +
         movie.price.dolars.in(currency.to_sym).value.to_s +
         " " + currency
+
+      opcion = prompt("Desea comprar la pelicula? [N/y]")
+      if opcion == "y"
+        @user.owned_movies
+      end
     end
   end
 
