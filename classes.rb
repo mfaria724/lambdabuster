@@ -6,10 +6,17 @@ class SearchList
     @list = *list
   end
 
-  # def <<(elem)
-  # @list << elem
-  # self
-  # end
+  def <<(elem)
+    @list << elem
+  end
+
+  def empty?
+    @list.empty?
+  end
+
+  def first
+    @list.first
+  end
 
   def to_s
     # print first n-1 elemnts with a comma
@@ -44,7 +51,7 @@ class SearchList
     else
       throw "Los elementos de la lista no poseen el atributo #{key}."
     end 
-    
+
   end
 
 end
@@ -517,11 +524,16 @@ class Transaction
 end
 
 class User
+  attr_accessor :owned_movies
+  attr_accessor :rented_movies
+  attr_accessor :trasanctions
+
   def initialize
     @owned_movies = SearchList.new()
     @rented_movies = SearchList.new()
     @trasanctions = SearchList.new() 
   end
+
 end
 
 # TODO: delete all test code

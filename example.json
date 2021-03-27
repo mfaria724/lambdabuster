@@ -1,30 +1,62 @@
 {
   "directors": [
     {
-    "name": String. Nombre del director,
-    "birthday": Date. Fecha de nacimiento del director, en formato ISO 8601,
-    "nationality": String. País de nacimiento del director
+    "name": "Amin",
+    "birthday": "1999-11-28",
+    "nationality": "Apureniense"
+    },
+    {
+      "name": "Amin2",
+      "birthday": "1999-12-28",
+      "nationality": "Apureniense"
+    },
+    {
+      "name": "Amin3",
+      "birthday": "1998-12-28",
+      "nationality": "De ningun lugar"
     }
   ],
   "actors": [
     {
-    "name": String. Nombre del actor,
-    "birthday": Date. Fecha de nacimiento del actor, en formato ISO 8601,
-    "nationality": String. País de nacimiento del actor
+    "name": "Faria",
+    "birthday": "1997-11-01",
+    "nationality": "Cachitense"
+    },
+    {
+      "name": "Dengue",
+      "birthday": "1997-01-07",
+      "nationality": "Portu"
+    },
+    {
+      "name": "Mpdm",
+      "birthday": "1997-07-01",
+      "nationality": "Cachitense"
     }
   ],
   "movies": [
     {
-    "name": String. Nombre de la película,
-    "runtime": Int. Duración de la película en minutos,
-    "categories": [String]. Lista de categorías o géneros de la película,
-    "release_date": Date. Fecha de estreno de la película, en formato ISO 8601,
-    "directors": [String]. Lista con los nombres de los directores de la película,
-    "actors": [String]. Lista con los nombres de los actores de la película,
-    "price": Float. Precio de compra de la película,
-    "rent_price": Float. Precio de alquiler de la película. Puede ser nulo, en cuyo caso la película no estará disponible para alquiler, 1
-    "premiere": Bool. Indica si la película es un estreno,
-    "discount": Int. Valor [0,100] que indica el descuento en % que tendrá una película.
+    "name": "MACrapidos MACfuriosos",
+    "runtime": 90,
+    "categories": ["Compushow", "Accion"],
+    "release_date": "2019-11-11",
+    "directors": ["Juancho"],
+    "actors": ["Barrera", "Koz", "Monascal", "Tito"],
+    "price": 69.0,
+    "rent_price": 42.0,
+    "premiere": "True",
+    "discount": 0
+    },
+    {
+      "name": "El pan que habla",
+      "runtime": 90,
+      "categories": ["Compushow"],
+      "release_date": "2016-11-11",
+      "directors": ["El jefe de turno"],
+      "actors": ["No me acuerdo"],
+      "price": 69.0,
+      "rent_price": 42.0,
+      "premiere": "True",
+      "discount": 0
     }
   ]
 }
