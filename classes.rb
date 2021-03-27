@@ -41,9 +41,9 @@ class SearchList
   # ???
   # end
 
-  # def each(∗args, &block)
-  # @list.each(∗args, &block)
-  # end
+  def each(&block)
+    @list.each(&block)
+  end
 
   def scan(key)
 

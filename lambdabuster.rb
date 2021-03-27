@@ -5,6 +5,7 @@ require 'set'
 class Cliente
   def initialize
     @user = User.new
+    @compare_options = {"1" => :< , "2" => :<= , "3" => :== , "4" => :>= , "5" => :>}
   end
 
   def read_person(person_class, data)
@@ -84,14 +85,14 @@ class Cliente
     puts "\t [5] - Salir."
   end
 
-  def menu
-    self.print_menu
+  def menu(opcion_list, print_menu)
+    self.send(print_menu)
     opcion = self.prompt "Opcion: "
 
-    while ! ["1", "2", "3", "4", "5"].include? opcion
+    while ! opcion_list.include? opcion
       self.clear
-      puts "Opcion invalida! Debe estar estar entre 1 y 5"
-      self.print_menu
+      puts "Opcion invalida! Debe estar estar entre #{opcion_list.first} y #{opcion_list.last}"
+      self.send(print_menu)
       opcion = self.prompt "Opcion: "
     end
 
@@ -186,16 +187,149 @@ class Cliente
     end
   end
 
-  def print_menu
+  def print_query_menu
     puts "Ingrese alguna de las siguientes acciones:"
-    puts "\t [1] - Crear nueva orden de alquiler."
-    puts "\t [2] - Crear nueva orden de compra."
-    puts "\t [3] - Mi Usuario."
-    puts "\t [4] - Consultar catálogo."
-    puts "\t [5] - Salir."
+    puts "\t [1] - Mostrar todas."
+    puts "\t [2] - Filtrar."
+    puts "\t [3] - Regresar al menu principal."
   end
-  def query
 
+  def print_other_filter_menu
+    puts "Ingrese alguna de las siguientes acciones:"
+    puts "\t [1] - Aplicar otro filtro."
+    puts "\t [2] - Buscar."
+  end
+
+  def query
+    opcion = menu(["1", "2", "3"], :print_query_menu)
+    if opcion == "1"
+      @movies.each {|x| puts x.to_s + "\n"}
+    elsif opcion == "2"
+      filter_list = @movies
+      end_filter = "1"
+      while end_filter == "1"
+        filter_list = filter filter_list
+        end_filter = menu(["1", "2"], :print_other_filter_menu)
+      end
+      filter_list.each {|x| puts x.to_s + "\n"}
+    end
+  end
+
+  def print_query_filter_menu
+    puts "Ingrese alguna de las siguientes acciones:"
+    puts "\t [1] - Nombre."
+    puts "\t [2] - A;o."
+    puts "\t [3] - Nombre de director."
+    puts "\t [4] - Nombre de actor."
+    puts "\t [5] - Duracion."
+    puts "\t [6] - Categorias."
+    puts "\t [7] - Precio de compra."
+    puts "\t [8] - Precio de alquiler."
+  end
+
+  def print_match_menu
+    puts "Ingrese alguna de las siguientes acciones:"
+    puts "\t [1] - Coincidencia exacta."
+    puts "\t [2] - Coincidencia parcial."
+  end
+
+  def print_compare_menu
+    puts "Ingrese alguna de las siguientes acciones:"
+    puts "\t [1] - Menor."
+    puts "\t [2] - Menor o igual."
+    puts "\t [3] - Igual."
+    puts "\t [4] - Mayor o igual."
+    puts "\t [5] - Mayor."
+  end
+
+  def filter(list)
+    opcion = menu(["1", "2", "3", "4", "5", "6", "7", "8"], :print_query_filter_menu)
+    
+    if opcion == "1"
+      movie_name = prompt("Indique el nombre que desea buscar: ")
+      opcion = menu(["1", "2"], :print_match_menu)
+      if opcion == "1"
+        list = list.scan(:name) { |name| name == movie_name }
+      else
+        list = list.scan(:name) { |name| name.include? movie_name }
+      end
+
+    elsif opcion == "2"
+      year = prompt("Indique el a;o: ")
+      opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
+      list = list.scan(:release_date) { |date| date.year.send @compare_options[opcion], year.to_i }
+
+    elsif opcion == "3"
+      director_name = prompt("Indique el nombre del director que desea buscar: ")
+      opcion = menu(["1", "2"], :print_match_menu)
+      if opcion == "1"
+        list = list.scan(:directors) { 
+          |directors| directors.any? { |name| name == director_name } 
+        }
+      else
+        list = list.scan(:directors) { 
+          |directors| directors.any? { |name| name.include? director_name } 
+        }
+      end
+
+    elsif opcion == "4"
+      actor_name = prompt("Indique el nombre del actor que desea buscar: ")
+      opcion = menu(["1", "2"], :print_match_menu)
+      if opcion == "1"
+        list = list.scan(:actors) { 
+          |actors| actors.any? { |name| name == actor_name } 
+        }
+      else
+        list = list.scan(:actors) { 
+          |actors| actors.any? { |name| name.include? actor_name } 
+        }
+      end
+
+    elsif opcion == "5"
+      runtime_filter = prompt("Indique la cantidad de minutos: ")
+      opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
+      list = list.scan(:runtime) { 
+        |runtime| runtime.send @compare_options[opcion], runtime_filter.to_i 
+      }
+
+    elsif opcion == "6"
+      catg_filter = []
+      puts "Las categorias disponibles son: "
+      @categories.each { |x| print x + ", "}
+      puts ""
+
+      opcion = "y"
+      while opcion == "y"
+        catg = prompt "Indique la categoria que desea buscar: "
+        while ! @categories.include? catg
+          puts "La categoria indicada no es ninguna de las disponibles"
+          catg = prompt "Indique la categoria que desea buscar: "
+        end
+        catg_filter = catg_filter.append(catg)
+
+        opcion = prompt "Desea agregar otra categoria? [N/y]"
+      end
+
+      list = list.scan(:categories) { 
+        |categories| catg_filter.all? { |catgr| categories.include? catgr }
+      }
+
+    elsif opcion == "7"
+      price_filter = prompt("Indique el precio de compra: ")
+      opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
+      list = list.scan(:price) { 
+        |price| price.send @compare_options[opcion], price_filter.to_i 
+      }
+
+    elsif opcion == "8"
+      price_filter = prompt("Indique el precion de renta: ")
+      opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
+      list = list.scan(:rent_price) { 
+        |price| price.send @compare_options[opcion], price_filter.to_i 
+      }
+    end
+
+    return list
   end
 end
 
@@ -204,13 +338,15 @@ c.read_json
 c.clear
 exit = false
 while ! exit
-  opcion = c.menu
+  opcion = c.menu(["1", "2", "3", "4", "5"], :print_menu)
   if opcion == "1"
     c.buy(:rent_price, :rented_movies, "alquilar")
   elsif opcion == "2"
     c.buy(:price, :owned_movies, "comprar")
   elsif opcion == "3"
     c.my_user
+  elsif opcion == "4"
+    c.query
   elsif opcion == "5"
     exit = true
   end
