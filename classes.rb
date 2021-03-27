@@ -29,13 +29,29 @@ class SearchList
   # @list.each(∗args, &block)
   # end
 
-  def scan()
+  def scan(key)
+    
+    @list.first.attributes[key]
 
+    # if @list.empty? then
+    #   SearchList.new()
+    # elsif  
+    #   # temp_list = @list.select { |elem| yield elem.send(key) }
+    #   SearchList.new()
+    # else
+    #   throw "Este elemento no posee el atributo #{key}"
+    # end 
+    
   end
 
 end
 
 class Person
+
+  attr_accessor :name
+  attr_accessor :birthday
+  attr_accessor :nationality
+
   def initialize(name, birthday, nationality)
     @name = name
     @birthday = birthday
@@ -472,6 +488,41 @@ class Bitcoin < Currency
   end
 end
 
+module BuyOrder
+  def buy_order(transaction)
+    transaction.date = Date.today
+    trasanction.total = trasanction.movie.rent_price
+  end
+end
+
+module RentOrder
+  def rent_order(transaction)
+    transaction.date = Date.today
+    trasanction.total = trasanction.movie.price
+  end
+end
+
+class Transaction
+  attr_accessor :movie
+  attr_accessor :date
+  attr_accessor :total
+
+  def initialize(movie, type)
+    @movie = movie
+    @type = type
+  end
+end
+
+class User
+  def initialize
+    @owned_movies = SearchList.new()
+    @rented_movies = SearchList.new()
+    @trasanctions = SearchList.new() 
+  end
+end
+
+# TODO: delete all test code
+
 c_nolan = Director.new('Christopher Nolan', 'X', 'English')
 j_d_washington = Actor.new('John David Washington', 'X', 'American')
 r_pattinson = Actor.new('Robert Pattinson', 'X', 'English')
@@ -508,3 +559,7 @@ puts var2.value
 puts var2.class
 
 puts 1.dolars.compare(1850000.bolivares) 
+
+list = SearchList.new(j_d_washington, r_pattinson, e_debicki)
+
+puts list.scan(:name) { |name| name == 'John David Washington' }
