@@ -100,26 +100,37 @@ class Cliente
 
   def buy(transaction_type, user_list, action_str)
     movie_name = prompt("Indique el nombre de la pelicula que desea #{action_str}: ")
-    movie = @movies.scan(:name) { |name| name == movie_name }
-    if ! movie.empty?
-      movie = movie.first
-      puts movie
-      currency = prompt("Indique el tipo de moneda para el pago: ")
-      while ! ["dolars", "euros", "bolivares", "bitcoins"].include? currency
-        puts "Moneda invalida. Debe ser 'dolars', 'euros', 'bolivares' o 'bitcoins'."
+    while movie_name != "Salir"
+      movie = @movies.scan(:name) { |name| name == movie_name }
+
+      if ! movie.empty?
+        movie = movie.first
+        puts movie
         currency = prompt("Indique el tipo de moneda para el pago: ")
+        while ! ["dolars", "euros", "bolivares", "bitcoins"].include? currency
+          puts "Moneda invalida. Debe ser 'dolars', 'euros', 'bolivares' o 'bitcoins'."
+          currency = prompt("Indique el tipo de moneda para el pago: ")
+        end
+
+        puts "El precio de la pelicula es " +
+          movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s +
+          " " + currency
+
+        confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
+        if confirmation == "y"
+          @user.send(user_list) << movie.name
+          puts "Su orden ha sido procesada con éxito."
+        end
+        movie_name = "Salir"
+
+
+      elsif
+        movie_name = prompt(
+          "La pelicula indicada no se encuentra en la base de datos.\n" + 
+          "Pruebe ingresando otro nombre. Tambien puede escribir " +
+          "'Salir' para regresar al menu principal: "
+        )
       end
-
-      puts "El precio de la pelicula es " +
-        movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s +
-        " " + currency
-
-      confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
-      if confirmation == "y"
-        @user.send(user_list) << movie.name
-        puts "Su orden ha sido procesada con éxito."
-      end
-
     end
   end
 
@@ -175,6 +186,17 @@ class Cliente
     end
   end
 
+  def print_menu
+    puts "Ingrese alguna de las siguientes acciones:"
+    puts "\t [1] - Crear nueva orden de alquiler."
+    puts "\t [2] - Crear nueva orden de compra."
+    puts "\t [3] - Mi Usuario."
+    puts "\t [4] - Consultar catálogo."
+    puts "\t [5] - Salir."
+  end
+  def query
+
+  end
 end
 
 c = Cliente.new
