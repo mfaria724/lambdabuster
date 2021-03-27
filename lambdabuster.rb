@@ -98,8 +98,8 @@ class Cliente
     return opcion
   end
 
-  def buy 
-    movie_name = prompt("Indique el nombre de la pelicula que desea alquilar: ")
+  def buy(transaction_type, user_list, action_str)
+    movie_name = prompt("Indique el nombre de la pelicula que desea #{action_str}: ")
     movie = @movies.scan(:name) { |name| name == movie_name }
     if ! movie.empty?
       movie = movie.first
@@ -111,13 +111,35 @@ class Cliente
       end
 
       puts "El precio de la pelicula es " +
-        movie.price.dolars.in(currency.to_sym).value.to_s +
+        movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s +
         " " + currency
 
+<<<<<<< HEAD
       opcion = prompt("Desea comprar la pelicula? [N/y]")
       if opcion == "y"
         @user.owned_movies
       end
+=======
+      confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
+      if confirmation == "y":
+        @user.send(user_list) << movie
+        puts "Su orden ha sido procesada con éxito."
+      end
+
+    end
+  end
+
+  def my_user 
+    puts "Películas Compradas: "
+    puts @user.owned_movies
+
+    puts "Películas Alquiladas: "
+    puts @user.rented_movies
+
+    response = prompt "¿Desea consultar la información de alguna de estas películas? [N/y]"
+    if response == "y"
+      prompt "Ingrese el nombre de la película que desea consultar: "
+>>>>>>> 1969680cdf14ca15d1c917669bb112dc9b5e2109
     end
   end
 
@@ -130,7 +152,11 @@ exit = false
 while ! exit
   opcion = c.menu
   if opcion == "1"
-    c.buy
+    c.buy(:rent_price, :rented_movies, "alquilar")
+  elsif opcion == "2"
+    c.buy(:price, :owned_movies, "comprar")
+  elsif opcion == "3"
+    c.my_user
   elsif opcion == "5"
     exit = true
   end
