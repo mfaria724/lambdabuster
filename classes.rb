@@ -490,6 +490,7 @@ tenet = Movie.new(
   20
 )
 
+=begin
 puts tenet.to_s
 puts tenet.price
 puts tenet.rent_price
@@ -508,3 +509,7 @@ puts var2.value
 puts var2.class
 
 puts 1.dolars.compare(1850000.bolivares) 
+
+mysymbol = :name
+puts c_nolan.instance_variables.include?(("@" + mysymbol.to_s).to_sym)
+=end
