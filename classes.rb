@@ -61,11 +61,13 @@ class SearchList
     # as all elements on a SearchList are of the same type, just checking if the
     # first element contains the attribute is enough to verify that all of them
     # have it.
-    elsif @list.first.instance_variables.include?(("@" + key.to_s).to_sym)
+    elsif @list.first.instance_variables.include?(("@" + key.to_s).to_sym) ||
+      @list.first.class.method_defined?(key)
+
       temp_list = @list.select { |elem| yield elem.send(key) }
       return SearchList.new(*temp_list)
     else
-      throw "Los elementos de la lista no poseen el atributo #{key}."
+      throw "Los elementos de tipo '#{@list.first.class}'' no poseen el atributo '#{key}'."
     end 
 
   end

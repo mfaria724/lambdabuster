@@ -137,8 +137,9 @@ class Cliente
 
     # gets movie name
     movie_name = prompt("Indique el nombre de la pelicula que desea #{action_str}: ")
+    salir = true
     while movie_name != "Salir"
-
+      salir = false
       # checks if the movie is in the database
       movie = @movies.scan(:name) { |name| name == movie_name }
 
@@ -185,8 +186,12 @@ class Cliente
           "Pruebe ingresando otro nombre. Tambien puede escribir " +
           "'Salir' para regresar al menu principal: "
         )
+        salir = true
       end
 
+    end
+    if salir
+      clear
     end
   end
 
@@ -220,8 +225,9 @@ class Cliente
       while (! @user.owned_movies.include? movie_name) && 
         (! @user.rented_movies.include? movie_name) &&
         (movie_name != "Salir")
-        puts "Pelicula no encontrada. Debe ingresar una alguna alquilada o comprada."
-        puts "Puede escribir 'Salir' para regresar al menu principal"
+        puts "\nPelicula no encontrada. ".bold() + 
+          "Debe ingresar alguna alquilada o comprada por usted."
+        puts "Puede escribir 'Salir' para regresar al menu principal.\n"
         movie_name = prompt "Ingrese el nombre de la película que desea consultar: "
       end
 
@@ -289,7 +295,8 @@ class Cliente
     opcion = menu(["1", "2", "3"], :print_query_menu)
     if opcion == "1"
       # shows all movies 
-      puts "\n"
+      clear
+      puts "Catálogo completo de películas:\n".bold()
       @movies.each {|x| puts x.to_s + "\n"}
     elsif opcion == "2"
       # keeps asking if user wants to add more filters to the query
