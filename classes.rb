@@ -1,11 +1,15 @@
 require 'date'
 
+# this expansion of class String is used to format the output
+# increases redability for the user
 class String
   def bold
     "\e[1m" + self + "\e[0m"
   end
 end
 
+# class to store all elements that will be defined in the following classes
+# cotains utilities to look for elements in this lists
 class SearchList
 
   def initialize (*list)
@@ -42,19 +46,21 @@ class SearchList
       return ""
     end
   end
-  
-  # def +(other)
-  # ???
-  # end
 
+  # applies a block of code to each element of the list
   def each(&block)
     @list.each(&block)
   end
 
+  # recieves a symbol and a block and verifies that an attribute of the elements
+  # in the list meets a certain condition
   def scan(key)
 
     if @list.empty? then
       return SearchList.new()
+    # as all elements on a SearchList are of the same type, just checking if the
+    # first element contains the attribute is enough to verify that all of them
+    # have it.
     elsif @list.first.instance_variables.include?(("@" + key.to_s).to_sym)
       temp_list = @list.select { |elem| yield elem.send(key) }
       return SearchList.new(*temp_list)
@@ -66,6 +72,7 @@ class SearchList
 
 end
 
+# identifies the basic data of a person. Parent class of Actor and Director
 class Person
 
   attr_accessor :name
@@ -84,6 +91,8 @@ class Person
   end
 end
 
+# creates a kind of double linked list between movies and actors. Each actor
+# contains a list of movies where he has acted and viceversa. 
 class Actor < Person
   def initialize(name, birthday, nationality)
     super(name, birthday, nationality)
@@ -91,6 +100,8 @@ class Actor < Person
   end
 end
 
+# creates a kind of double linked list between movies and actors. Each director
+# contains a list of movies that he has directed and viceversa.
 class Director < Person
   def initialize(name, birthday, nationality)
     super(name, birthday, nationality)
@@ -98,6 +109,7 @@ class Director < Person
   end
 end
 
+# stores the basic information for a movie. Parent class for Premiere and
 class Movie
 
   attr_accessor :name
@@ -163,91 +175,62 @@ class Movie
   end
 end
 
+# this class was made to proof our knowledge about the design pattern decorator
+# heritance would have been a better choice. As we did this way, we needed to 
+# define a single method for each of the variables in order to be able to get 
+# them. This code is duplicated in class Discount as attributes need also to be
+# "gettable"
 class Premiere 
   def initialize(movie)
     @movie = movie
   end
 
-  # name setters and getters
+  # name setters
   def name
     @movie.name
   end
   
-  # TODO: remove if not neccesary setter
-  def name=(name)
-    @movie.name = name
-  end
-
-  # runtime setters and getters
+  # runtime setters
   def runtime
     @movie.runtime
   end
   
-  # TODO: remove if not neccesary setter
-  def runtime=(runtime)
-    @movie.runtime = runtime
-  end
-
-  # categories setters and getters
+  # categories setters
   def categories
     @movie.categories
   end
   
-  # TODO: remove if not neccesary setter
-  def categories=(categories)
-    @movie.categories = categories
-  end
-
-  # release_date setters and getters
+  # release_date setters
   def release_date
     @movie.release_date
   end
   
-  # TODO: remove if not neccesary setter
-  def release_date=(release_date)
-    @movie.release_date = release_date
-  end
-
-  # directors setters and getters
+  # directors setters
   def directors
     @movie.directors
   end
   
-  # TODO: remove if not neccesary setter
-  def directors=(directors)
-    @movie.directors = directors
-  end
-
-  # actors setters and getters
+  # actors setters
   def actors
     @movie.actors
   end
   
-  # TODO: remove if not neccesary setter
-  def actors=(actors)
-    @movie.actors = actors
-  end
-
-  # premiere setters and getters
+  # premiere setters
   def premiere
     @movie.premiere
   end
   
-  # TODO: remove if not neccesary setter
-  def premiere=(premiere)
-    @movie.premiere = premiere
-  end
-
-  # discount setters and getters
+  # discount setters
   def discount
     @movie.discount
   end
-  
-  # TODO: remove if not neccesary setter
-  def discount=(discount)
-    @movie.discount = discount
-  end
 
+  # to string extension
+  def to_s
+    @movie.to_s
+  end
+  
+  # decorators applied related to the premiere extra charge
   def price
     @movie.price * 2
   end
@@ -257,91 +240,62 @@ class Premiere
   end
 end
 
+# this class was made to proof our knowledge about the design pattern decorator
+# heritance would have been a better choice. As we did this way, we needed to 
+# define a single method for each of the variables in order to be able to get 
+# them. This code is duplicated in class Premiere as attributes need also to be
+# "gettable"
 class Discount 
   def initialize(movie)
     @movie = movie
   end
 
-  # name setters and getters
+  # name setters
   def name
     @movie.name
   end
   
-  # TODO: remove if not neccesary setter
-  def name=(name)
-    @movie.name = name
-  end
-
-  # runtime setters and getters
+  # runtime setters
   def runtime
     @movie.runtime
   end
   
-  # TODO: remove if not neccesary setter
-  def runtime=(runtime)
-    @movie.runtime = runtime
-  end
-
-  # categories setters and getters
+  # categories setters
   def categories
     @movie.categories
   end
   
-  # TODO: remove if not neccesary setter
-  def categories=(categories)
-    @movie.categories = categories
-  end
-
-  # release_date setters and getters
+  # release_date setters
   def release_date
     @movie.release_date
   end
   
-  # TODO: remove if not neccesary setter
-  def release_date=(release_date)
-    @movie.release_date = release_date
-  end
-
-  # directors setters and getters
+  # directors setters
   def directors
     @movie.directors
   end
   
-  # TODO: remove if not neccesary setter
-  def directors=(directors)
-    @movie.directors = directors
-  end
-
-  # actors setters and getters
+  # actors setters
   def actors
     @movie.actors
   end
   
-  # TODO: remove if not neccesary setter
-  def actors=(actors)
-    @movie.actors = actors
-  end
-
-  # premiere setters and getters
+  # premiere setters
   def premiere
     @movie.premiere
   end
   
-  # TODO: remove if not neccesary setter
-  def premiere=(premiere)
-    @movie.premiere = premiere
-  end
-
-  # discount setters and getters
+  # discount setters
   def discount
     @movie.discount
   end
   
-  # TODO: remove if not neccesary setter
-  def discount=(discount)
-    @movie.discount = discount
+  # to string extension
+  def to_s
+    @movie.to_s
   end
 
+  # decorators related to the discount applied to the movie
   def price
     (1 - (@movie.discount / 100.0)) * @movie.price
   end
@@ -351,6 +305,7 @@ class Discount
   end
 end
 
+# extension of Integer and Float classes into our custom currency type classes.
 class Float
   def dolars
     Dolar.new(self)
@@ -387,6 +342,8 @@ class Integer
   end 
 end
 
+# Parent class for every currency type class that provides utility methods for
+# exchange between different currencies.
 class Currency 
   attr_accessor :value
   attr_accessor :currency
@@ -395,10 +352,12 @@ class Currency
     @value = value
   end
 
+  # transforms a currency to the especified symbol
   def in(currency)
     (@value * self.send(currency)).send(currency)
   end
 
+  # compares an different element with the current one using the same currency.
   def compare(object)
     this_value = self.in(object.currency).value
     other_value = object.value
@@ -413,6 +372,7 @@ class Currency
     
 end
 
+# values to transforme the different currencies
 class Dolar < Currency
 
   def initialize(value)
@@ -437,6 +397,7 @@ class Dolar < Currency
   end
 end
 
+# values to transforme the different currencies
 class Euro < Currency
 
   def initialize(value)
@@ -461,6 +422,7 @@ class Euro < Currency
   end
 end
 
+# values to transforme the different currencies
 class Bolivar < Currency
 
   def initialize(value)
@@ -485,6 +447,7 @@ class Bolivar < Currency
   end
 end
 
+# values to transforme the different currencies
 class Bitcoin < Currency
 
   def initialize(value)
@@ -509,21 +472,27 @@ class Bitcoin < Currency
   end
 end
 
+# module to compute the price and date of a buy op
 module BuyOrder
   def buy_order(transaction)
     transaction.date = Date.today
-    trasanction.total = trasanction.movie.rent_price
+    transaction.total = transaction.movie.price
   end
 end
 
+# module to compute the price and date of a rent op
 module RentOrder
   def rent_order(transaction)
-    transaction.date = Date.today
-    trasanction.total = trasanction.movie.price
+    transaction.date = Date.today + 2
+    transaction.total = transaction.movie.rent_price
   end
 end
 
+# class to start a transaction, no matter if it is a buy or rent operation
 class Transaction
+  include BuyOrder
+  include RentOrder
+
   attr_accessor :movie
   attr_accessor :date
   attr_accessor :total
@@ -531,62 +500,26 @@ class Transaction
   def initialize(movie, type)
     @movie = movie
     @type = type
+
+    # compute the date and the total price depending on the type of operation
+    if @type == :buy
+      buy_order(self)
+    else
+      rent_order(self)
+    end
   end
 end
 
+# class to store the information of the user
 class User
   attr_accessor :owned_movies
   attr_accessor :rented_movies
-  attr_accessor :trasanctions
+  attr_accessor :transactions
 
   def initialize
     @owned_movies = SearchList.new()
     @rented_movies = SearchList.new()
-    @trasanctions = SearchList.new() 
+    @transactions = SearchList.new() 
   end
 
 end
-
-# TODO: delete all test code
-
-=begin
-c_nolan = Director.new('Christopher Nolan', 'X', 'English')
-j_d_washington = Actor.new('John David Washington', 'X', 'American')
-r_pattinson = Actor.new('Robert Pattinson', 'X', 'English')
-e_debicki = Actor.new('Elizabeth Debicki', 'X', 'Australian')
-
-tenet = Movie.new(
-  'Tenet', 
-  150, 
-  ['Action', 'Sci-fi', 'Thriller'],
-  Date.parse('2020-09-03'),
-  SearchList.new(c_nolan),
-  SearchList.new(j_d_washington, r_pattinson, e_debicki),
-  100.0,
-  10.0,
-  true,
-  20
-)
-
-puts tenet.to_s
-puts tenet.price
-puts tenet.rent_price
-
-tenet_premier = Premiere.new(tenet)
-puts tenet_premier.price
-puts tenet_premier.rent_price
-
-tenet_discount = Discount.new(tenet)
-puts tenet_discount.price
-puts tenet_discount.rent_price
-
-var = 1850000.bolivares()
-var2 = var.in(:dolars) 
-puts var2.value
-puts var2.class
-
-puts 1.dolars.compare(1850000.bolivares) 
-
-list = SearchList.new(c_nolan, j_d_washington, r_pattinson, e_debicki)
-puts list.scan(:nationality) { |nationality| nationality == 'English' }
-=end

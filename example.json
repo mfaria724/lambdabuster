@@ -44,7 +44,7 @@
     "price": 69.0,
     "rent_price": 42.0,
     "premiere": "True",
-    "discount": 0
+    "discount": 10
     },
     {
       "name": "El pan que habla",

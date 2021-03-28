@@ -3,19 +3,23 @@ require 'json'
 require 'set'
 require 'date'
 
+# class to manipulate all cliente logic
 class Cliente
   attr_accessor :rented_movies
 
   def initialize
+    # instanciates the initial user and adds some utilities for options
     @user = User.new
     @compare_options = {"1" => :< , "2" => :<= , "3" => :== , "4" => :>= , "5" => :>}
-    @rented_dates = {}
   end
 
+  # creates an object with the provided class parsin the date
   def read_person(person_class, data)
     person_class.new(data["name"], Date.parse(data["birthday"]), data["nationality"])
   end
 
+  # creates an object for a Movie, and wraps it into a Premier and/or Discount 
+  # when it applies
   def read_movie(data)
     movie = Movie.new(
       data["name"],
@@ -30,7 +34,8 @@ class Cliente
       data["discount"]
     )
 
-    if data["premiere"] == true
+    # wraps it into Premier and/or Discount objects respectively
+    if data["premiere"] == "True"
       movie = Premiere.new(movie)
     end
 
@@ -41,21 +46,28 @@ class Cliente
     movie
   end
 
+  # helper method to create a prompt
   def prompt(msg)
     print msg
     text = gets
     text.chomp
   end
 
+  # read json initializer
   def read_json
     @persons = {}
     @actors = {}
     @directors = {}
     @categories = Set.new
 
+    # ask for json location
     file_name = self.prompt "Indique el archivo JSON: "
     file = File.read(file_name)
+
+    # uses json library to parse
     data_hash = JSON.parse(file)
+
+    # checks if a person appears more than once as Director
     for director in data_hash["directors"]
       if ! @persons.keys.include? director["name"]
         @persons[director["name"]] = self.read_person(Person, director)
@@ -65,6 +77,8 @@ class Cliente
       end
     end
 
+    # checks if an Actor appears more than once as an actor and if him appears
+    # as a director avoid adding it again as a new Person
     for actor in data_hash["actors"]
       if ! @actors.keys.include? actor["name"]
         @actors[actor["name"]] = self.read_person(Actor, actor)
@@ -76,6 +90,7 @@ class Cliente
       end
     end
 
+    # parse the movies 
     movies = []
     for movie in data_hash["movies"]
       movies = movies.append(self.read_movie(movie))
@@ -86,10 +101,12 @@ class Cliente
     @movies = SearchList.new(*movies)
   end
 
+  # helper method to clear the console
   def clear
     print "\033c"
   end
 
+  # helper method to print the options of the main menu
   def print_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Crear nueva orden de alquiler."
@@ -99,8 +116,8 @@ class Cliente
     puts "\t [5] - Salir."
   end
 
+  # prompts any given menu and asks for a valid option
   def menu(opcion_list, print_menu)
-    puts "\n"
     self.send(print_menu)
     opcion = self.prompt "Opcion: "
 
@@ -114,14 +131,22 @@ class Cliente
     return opcion
   end
 
+  # starts the process of starting a new operation, even renting or
+  # purchase
   def buy(transaction_type, user_list, action_str)
+
+    # gets movie name
     movie_name = prompt("Indique el nombre de la pelicula que desea #{action_str}: ")
     while movie_name != "Salir"
+
+      # checks if the movie is in the database
       movie = @movies.scan(:name) { |name| name == movie_name }
 
       if ! movie.empty?
         movie = movie.first
         puts "\n#{movie}\n"
+
+        # asks for currency for the payment
         currency = prompt("Indique el tipo de moneda para el pago [dolars/euros/bolivares/bitcoins]: ")
         while ! ["dolars", "euros", "bolivares", "bitcoins"].include? currency
           puts "Moneda invalida.".bold() + 
@@ -129,11 +154,13 @@ class Cliente
           currency = prompt("Indique el tipo de moneda para el pago: ")
         end
 
+        # prints the information about the total of the movie
         puts "\nEl precio de la pelicula es ".bold() +
           movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s.bold() +
           " " + currency.bold()
         puts "\n"
 
+        # confirmation message for the user
         confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
         if confirmation == "y"
           @user.send(user_list) << movie.name
@@ -141,10 +168,16 @@ class Cliente
           puts "Su orden ha sido procesada con éxito.\n".bold()
         else
           self.clear()
-          puts "\nLa transacción ha sido cancelada.\n".bold()
+          puts "La transacción ha sido cancelada.\n".bold()
         end
         movie_name = "Salir"
 
+        # stores the successfull transation in the transactions lists
+        if transaction_type == "price"
+          @user.transactions << Transaction.new(movie, :buy)
+        else
+          @user.transactions << Transaction.new(movie, :rent)
+        end 
 
       elsif
         movie_name = prompt(
@@ -154,32 +187,36 @@ class Cliente
         )
       end
 
-      if transaction_type == "price"
-        @rented_dates[movie.name] = Date.today + 2
-      end 
     end
   end
 
+  # function to start functionality my user
   def my_user 
 
+    # checks if there's information to show
     if @user.owned_movies.empty? && @user.rented_movies.empty?
       self.clear()
       puts "No existe ninguna transacción aún.".bold()
       return
     end
 
+    # prints the lists of rented and purchased movies
     puts "\nPelículas Compradas: ".bold()
     puts @user.owned_movies
 
     puts "\nPelículas Alquiladas: ".bold()
     puts @user.rented_movies
 
+    # asks if user wants to consult the information of a movies
     puts "\n"
     response = prompt "¿Desea consultar la información de alguna de estas películas? [N/y] "
+    
     while response == "y"
       puts "\n"
+      # asks for movie name
       movie_name = prompt "Ingrese el nombre de la película que desea consultar: "
 
+      # check if the movie is on the list
       while (! @user.owned_movies.include? movie_name) && 
         (! @user.rented_movies.include? movie_name) &&
         (movie_name != "Salir")
@@ -189,15 +226,19 @@ class Cliente
       end
 
       if movie_name != "Salir"
+        # prints the movie information
         movie = (@movies.scan(:name) { |name| name == movie_name }).first
         puts "\n#{movie}\n"
 
+        # asks if user wants information about a Person in the movie
         response2 = prompt "¿Desea consultar la información de algun actor o director " + 
           "de esta pelicula? [N/y] "
         
         while response2 == "y"
+          # asks for the name of the person
           person_name = prompt "\nIngrese el nombre de la persona que desea consultar: "
 
+          # checks that the person is valid
           while (! movie.actors.include? person_name) && 
             (! movie.directors.include? person_name) &&
             (person_name != "Salir")
@@ -206,6 +247,7 @@ class Cliente
             person_name = prompt "Ingrese el nombre de la persona que desea consultar: "
           end
 
+          # prints the information of the Person if required
           if person_name != "Salir"
             puts "\n#{@persons[person_name]}\n"
             response2 = prompt "¿Desea consultar la información de algun otro actor o " + 
@@ -215,6 +257,7 @@ class Cliente
           end
         end
         
+        # checks if wants to keep consulting movies
         response = prompt "¿Desea consultar la información de alguna otra película? [N/y]"
       else
         response = "N"
@@ -224,6 +267,7 @@ class Cliente
     self.clear()
   end
 
+  # helper for filtering main menu
   def print_query_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Mostrar todas."
@@ -231,18 +275,24 @@ class Cliente
     puts "\t [3] - Regresar al menu principal."
   end
 
+  # helper for multiple filters on the menu
   def print_other_filter_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Aplicar otro filtro."
     puts "\t [2] - Buscar."
   end
 
+  # implements the catalog functionality
   def query
+
+    # starts with the main menu 
     opcion = menu(["1", "2", "3"], :print_query_menu)
     if opcion == "1"
+      # shows all movies 
       puts "\n"
       @movies.each {|x| puts x.to_s + "\n"}
     elsif opcion == "2"
+      # keeps asking if user wants to add more filters to the query
       filter_list = @movies
       end_filter = "1"
       while end_filter == "1"
@@ -251,11 +301,14 @@ class Cliente
       end
 
       self.clear()
+
+      # prints the results of the query
       puts "Resultados de la búsqueda:\n".bold()
       filter_list.each {|x| puts x.to_s + "\n"}
     end
   end
 
+  # helper menu for atributes which can be applied to the movies
   def print_query_filter_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Nombre."
@@ -268,12 +321,14 @@ class Cliente
     puts "\t [8] - Precio de alquiler."
   end
 
+  # helper menu for the type of coincidence
   def print_match_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Coincidencia exacta."
     puts "\t [2] - Coincidencia parcial."
   end
 
+  # helper menu for the type of comparison
   def print_compare_menu
     puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Menor."
@@ -283,10 +338,13 @@ class Cliente
     puts "\t [5] - Mayor."
   end
 
+  # starts the filtering functionality
   def filter(list)
     opcion = menu(["1", "2", "3", "4", "5", "6", "7", "8"], :print_query_filter_menu)
     
+    # if clause for every type of filter that can be applied over the movies
     if opcion == "1"
+      # search by name
       movie_name = prompt("Indique el nombre que desea buscar: ")
       opcion = menu(["1", "2"], :print_match_menu)
       if opcion == "1"
@@ -296,11 +354,13 @@ class Cliente
       end
 
     elsif opcion == "2"
+      # search by year
       year = prompt("Indique el año: ")
       opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
       list = list.scan(:release_date) { |date| date.year.send @compare_options[opcion], year.to_i }
 
     elsif opcion == "3"
+      # search by director
       director_name = prompt("Indique el nombre del director que desea buscar: ")
       opcion = menu(["1", "2"], :print_match_menu)
       if opcion == "1"
@@ -314,6 +374,7 @@ class Cliente
       end
 
     elsif opcion == "4"
+      # search by actor
       actor_name = prompt("Indique el nombre del actor que desea buscar: ")
       opcion = menu(["1", "2"], :print_match_menu)
       if opcion == "1"
@@ -327,6 +388,7 @@ class Cliente
       end
 
     elsif opcion == "5"
+      # search by runtime
       runtime_filter = prompt("Indique la cantidad de minutos: ")
       opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
       list = list.scan(:runtime) { 
@@ -334,12 +396,14 @@ class Cliente
       }
 
     elsif opcion == "6"
+      # search by category
       catg_filter = []
       puts "Las categorias disponibles son: "
       @categories.each { |x| print x + ", "}
       puts ""
 
       opcion = "y"
+      # asks for every category and checks if the category exists
       while opcion == "y"
         catg = prompt "Indique la categoria que desea buscar: "
         while ! @categories.include? catg
@@ -351,11 +415,13 @@ class Cliente
         opcion = prompt "Desea agregar otra categoria? [N/y]"
       end
 
+      # applies the filter
       list = list.scan(:categories) { 
         |categories| catg_filter.all? { |catgr| categories.include? catgr }
       }
 
     elsif opcion == "7"
+      # search by purchase price
       price_filter = prompt("Indique el precio de compra: ")
       opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
       list = list.scan(:price) { 
@@ -363,6 +429,7 @@ class Cliente
       }
 
     elsif opcion == "8"
+      # search by renting price
       price_filter = prompt("Indique el precion de renta: ")
       opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
       list = list.scan(:rent_price) { 
@@ -374,8 +441,12 @@ class Cliente
   end
 end
 
+# infinite loop to initialize the REPL 
 c = Cliente.new
+
+# loads database information
 c.read_json
+
 c.clear
 exit = false
 while ! exit
