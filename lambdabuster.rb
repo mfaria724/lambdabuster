@@ -1,11 +1,15 @@
 require_relative "classes"
 require 'json'
 require 'set'
+require 'date'
 
 class Cliente
+  attr_accessor :rented_movies
+
   def initialize
     @user = User.new
     @compare_options = {"1" => :< , "2" => :<= , "3" => :== , "4" => :>= , "5" => :>}
+    @rented_dates = {}
   end
 
   def read_person(person_class, data)
@@ -13,7 +17,7 @@ class Cliente
   end
 
   def read_movie(data)
-    Movie.new(
+    movie = Movie.new(
       data["name"],
       data["runtime"],
       data["categories"],
@@ -25,6 +29,16 @@ class Cliente
       data["premiere"],
       data["discount"]
     )
+
+    if data["premiere"] == true
+      movie = Premiere.new(movie)
+    end
+
+    if data["discount"] != 0
+      movie = Discount.new(movie)
+    end
+
+    movie
   end
 
   def prompt(msg)
@@ -77,7 +91,7 @@ class Cliente
   end
 
   def print_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Crear nueva orden de alquiler."
     puts "\t [2] - Crear nueva orden de compra."
     puts "\t [3] - Mi Usuario."
@@ -86,6 +100,7 @@ class Cliente
   end
 
   def menu(opcion_list, print_menu)
+    puts "\n"
     self.send(print_menu)
     opcion = self.prompt "Opcion: "
 
@@ -106,44 +121,63 @@ class Cliente
 
       if ! movie.empty?
         movie = movie.first
-        puts movie
-        currency = prompt("Indique el tipo de moneda para el pago: ")
+        puts "\n#{movie}\n"
+        currency = prompt("Indique el tipo de moneda para el pago [dolars/euros/bolivares/bitcoins]: ")
         while ! ["dolars", "euros", "bolivares", "bitcoins"].include? currency
-          puts "Moneda invalida. Debe ser 'dolars', 'euros', 'bolivares' o 'bitcoins'."
+          puts "Moneda invalida.".bold() + 
+            " Debe ser 'dolars', 'euros', 'bolivares' o 'bitcoins'."
           currency = prompt("Indique el tipo de moneda para el pago: ")
         end
 
-        puts "El precio de la pelicula es " +
-          movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s +
-          " " + currency
+        puts "\nEl precio de la pelicula es ".bold() +
+          movie.send(transaction_type).dolars.in(currency.to_sym).value.to_s.bold() +
+          " " + currency.bold()
+        puts "\n"
 
         confirmation = prompt "¿Desea continuar con esta transacción? [N/y]"
         if confirmation == "y"
           @user.send(user_list) << movie.name
-          puts "Su orden ha sido procesada con éxito."
+          self.clear()
+          puts "Su orden ha sido procesada con éxito.\n".bold()
+        else
+          self.clear()
+          puts "\nLa transacción ha sido cancelada.\n".bold()
         end
         movie_name = "Salir"
 
 
       elsif
         movie_name = prompt(
-          "La pelicula indicada no se encuentra en la base de datos.\n" + 
+          "La pelicula indicada no se encuentra en la base de datos.\n".bold() + 
           "Pruebe ingresando otro nombre. Tambien puede escribir " +
           "'Salir' para regresar al menu principal: "
         )
       end
+
+      if transaction_type == "price"
+        @rented_dates[movie.name] = Date.today + 2
+      end 
     end
   end
 
   def my_user 
-    puts "Películas Compradas: "
+
+    if @user.owned_movies.empty? && @user.rented_movies.empty?
+      self.clear()
+      puts "No existe ninguna transacción aún.".bold()
+      return
+    end
+
+    puts "\nPelículas Compradas: ".bold()
     puts @user.owned_movies
 
-    puts "Películas Alquiladas: "
+    puts "\nPelículas Alquiladas: ".bold()
     puts @user.rented_movies
 
+    puts "\n"
     response = prompt "¿Desea consultar la información de alguna de estas películas? [N/y] "
     while response == "y"
+      puts "\n"
       movie_name = prompt "Ingrese el nombre de la película que desea consultar: "
 
       while (! @user.owned_movies.include? movie_name) && 
@@ -156,12 +190,13 @@ class Cliente
 
       if movie_name != "Salir"
         movie = (@movies.scan(:name) { |name| name == movie_name }).first
-        puts movie
+        puts "\n#{movie}\n"
+
         response2 = prompt "¿Desea consultar la información de algun actor o director " + 
           "de esta pelicula? [N/y] "
         
         while response2 == "y"
-          person_name = prompt "Ingrese el nombre de la persona que desea consultar: "
+          person_name = prompt "\nIngrese el nombre de la persona que desea consultar: "
 
           while (! movie.actors.include? person_name) && 
             (! movie.directors.include? person_name) &&
@@ -172,7 +207,7 @@ class Cliente
           end
 
           if person_name != "Salir"
-            puts @persons[person_name]
+            puts "\n#{@persons[person_name]}\n"
             response2 = prompt "¿Desea consultar la información de algun otro actor o " + 
               "director de esta pelicula? [N/y]"
           else
@@ -185,17 +220,19 @@ class Cliente
         response = "N"
       end
     end
+
+    self.clear()
   end
 
   def print_query_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Mostrar todas."
     puts "\t [2] - Filtrar."
     puts "\t [3] - Regresar al menu principal."
   end
 
   def print_other_filter_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Aplicar otro filtro."
     puts "\t [2] - Buscar."
   end
@@ -203,6 +240,7 @@ class Cliente
   def query
     opcion = menu(["1", "2", "3"], :print_query_menu)
     if opcion == "1"
+      puts "\n"
       @movies.each {|x| puts x.to_s + "\n"}
     elsif opcion == "2"
       filter_list = @movies
@@ -211,14 +249,17 @@ class Cliente
         filter_list = filter filter_list
         end_filter = menu(["1", "2"], :print_other_filter_menu)
       end
+
+      self.clear()
+      puts "Resultados de la búsqueda:\n".bold()
       filter_list.each {|x| puts x.to_s + "\n"}
     end
   end
 
   def print_query_filter_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Nombre."
-    puts "\t [2] - A;o."
+    puts "\t [2] - Año."
     puts "\t [3] - Nombre de director."
     puts "\t [4] - Nombre de actor."
     puts "\t [5] - Duracion."
@@ -228,13 +269,13 @@ class Cliente
   end
 
   def print_match_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Coincidencia exacta."
     puts "\t [2] - Coincidencia parcial."
   end
 
   def print_compare_menu
-    puts "Ingrese alguna de las siguientes acciones:"
+    puts "Ingrese alguna de las siguientes acciones:".bold()
     puts "\t [1] - Menor."
     puts "\t [2] - Menor o igual."
     puts "\t [3] - Igual."
@@ -255,7 +296,7 @@ class Cliente
       end
 
     elsif opcion == "2"
-      year = prompt("Indique el a;o: ")
+      year = prompt("Indique el año: ")
       opcion = menu(["1", "2", "3", "4", "5"], :print_compare_menu)
       list = list.scan(:release_date) { |date| date.year.send @compare_options[opcion], year.to_i }
 

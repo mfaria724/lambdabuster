@@ -1,5 +1,11 @@
 require 'date'
 
+class String
+  def bold
+    "\e[1m" + self + "\e[0m"
+  end
+end
+
 class SearchList
 
   def initialize (*list)
@@ -73,7 +79,8 @@ class Person
   end
 
   def to_s
-    "Nombre: #{@name}.\nCumplea;os: #{@birthday}.\nNacionalidad: #{@nationality}."
+    "Nombre:".bold() + " #{@name}.\n" + "Cumpleaños:".bold() + " #{@birthday}.\n" + 
+    "Nacionalidad:".bold() + " #{@nationality}.\n"
   end
 end
 
